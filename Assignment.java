@@ -207,8 +207,8 @@ class PrioritySchedule {
         for (int i = 0; i < FinishedProcesses.size(); i++) {
             System.out.println("Process: " + FinishedProcesses.get(i).getName() + ", Waiting Time: " + FinishedProcesses.get(i).getWaiting() + "s, Turnaround Time: " + FinishedProcesses.get(i).getTurnaround() + "s");
         }
-        System.out.println("Average Waiting Time: " + AverageWaiting);
-        System.out.println("Average Turnaround Time: " + AverageTurnaround);
+        System.out.println("Average Waiting Time: " + AverageWaiting + "s");
+        System.out.println("Average Turnaround Time: " + AverageTurnaround + "s");
     }
 }
 
