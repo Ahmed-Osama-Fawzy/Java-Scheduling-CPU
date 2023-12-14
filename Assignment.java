@@ -8,13 +8,104 @@ class Process {
     float Waiting = 0 ;
     float Turnaround = 0 ;
     float Response = 0 ;
+    float ExitTime = 0;
+    int executionOrder = 0;
+    boolean Completed = false;
+    int remainingTime ;
+    int swappingTime = 0;
+
     public Process(String Name, int BurstTime , int ArrivalTime , int Priority, String Color) {
         this.Name = Name;
         this.BurstTime = BurstTime;
         this.ArrivalTime = ArrivalTime;
         this.Priority = Priority;
         this.Color = Color;
+        this.remainingTime = BurstTime;
     }
+
+    public void setName(String name) {
+        Name = name;
+    }
+
+    public void setBurstTime(int burstTime) {
+        BurstTime = burstTime;
+    }
+
+    public void setArrivalTime(int arrivalTime) {
+        ArrivalTime = arrivalTime;
+    }
+
+    public void setPriority(int priority) {
+        Priority = priority;
+    }
+
+    public void setColor(String color) {
+        Color = color;
+    }
+
+    public void setWaiting(float waiting) {
+        Waiting = waiting;
+    }
+
+    public void setTurnaround(float turnaround) {
+        Turnaround = turnaround;
+    }
+
+    public void setResponse(float response) {
+        Response = response;
+    }
+
+    public void setExitTime(float exitTime) {ExitTime = exitTime;}
+
+    public void setCompleted(boolean completed) {
+        Completed = completed;
+    }
+
+    public String getName() {
+        return Name;
+    }
+
+    public int getBurstTime() {
+        return BurstTime;
+    }
+
+    public int getArrivalTime() {
+        return ArrivalTime;
+    }
+
+    public int getPriority() {
+        return Priority;
+    }
+
+    public String getColor() {
+        return Color;
+    }
+
+    public float getWaiting() {
+        return Waiting;
+    }
+
+    public float getTurnaround() {
+        return Turnaround;
+    }
+
+    public float getResponse() {
+        return Response;
+    }
+
+    public float getExitTime() {
+        return ExitTime;
+    }
+
+    public boolean isCompleted() {return Completed;}
+    public int getExecutionOrder() {return executionOrder;}
+
+    public void setExecutionOrder(int executionOrder) {this.executionOrder = executionOrder;}
+    public void setSwappingTime(int swappingTime) {this.swappingTime = swappingTime;}
+
+    public int getSwappingTime() {return swappingTime;}
+    public void setRemainingTime(int remainingTime) {this.remainingTime = remainingTime;}
+    public int getRemainingTime() {return remainingTime;}
 }
 
 class SJFNonPreemptive {
@@ -71,8 +162,91 @@ class SJFNonPreemptive {
 }
 
 class SJFPreemptive {
+    //solving the Starvation Problem
+    //assuming that the process must enter the CPU if it's swapping time grater than 20
+    int maxSwap = 20;
+    List<Process> Processes;
+    PriorityQueue<Process> pQueue = new PriorityQueue<>(Comparator.comparingInt(Process::getBurstTime).thenComparingInt(Process::getArrivalTime));
+    Vector executionOrder = new Vector(); // Added vector to save ExecutionOrder
+
+    public SJFPreemptive(List<Process> processes) {
+        Processes = processes;
+    }
+
+    public Vector getExecutionOrder() {
+        return executionOrder;
+    }
+
+    public float ATT() {
+        float totalTurnaround = 0;
+        for (Process process : Processes) {
+            totalTurnaround += process.getTurnaround();
+        }
+        return totalTurnaround / Processes.size();
+    }
+
+    public float AWT() {
+        float totalWaiting = 0;
+        for (Process process : Processes) {
+            totalWaiting += process.getWaiting();
+        }
+        return totalWaiting / Processes.size();
+    }
+
+
+    public void runSJFPreemptive() {
+        int currentTime = 0;
+        int completedProcesses = 0;
+        Process currentProcess = null; // Process with the shortest remaining time
+
+
+        while (completedProcesses < Processes.size()) {
+            // Add processes to the priority queue based on remaining burst time
+            for (Process p : Processes) {
+                if (!p.isCompleted() && p.getArrivalTime() <= currentTime && !pQueue.contains(p)) {
+                    pQueue.add(p);
+                    // Check if the last process added to the vector is the same as the current process
+                }
+            }
+
+
+            // Check if the priority queue is not empty
+            if (!pQueue.isEmpty()) {
+
+                currentProcess = pQueue.poll();
+                int remainingTime = currentProcess.getRemainingTime();
+                if(pQueue.peek() != currentProcess){
+                    currentProcess.setSwappingTime(currentProcess.getSwappingTime()+1);
+                }
+                // decrease the process for one time unit
+                remainingTime--;
+
+                // Check if the process has completed
+                if (remainingTime == 0) {
+                    // Process has completed
+                    currentProcess.setExitTime(currentTime + 1);
+                    currentProcess.setTurnaround(currentProcess.getExitTime() - currentProcess.getArrivalTime());
+                    currentProcess.setWaiting(currentProcess.getTurnaround() - currentProcess.getBurstTime());
+                    currentProcess.setCompleted(true);
+                    completedProcesses++;
+                } else {
+                    // Process not completed, update its remaining time and add it back to the queue
+                    currentProcess.setRemainingTime(remainingTime);
+                    pQueue.add(currentProcess);
+                }
+                if (executionOrder.isEmpty() || !executionOrder.lastElement().equals(currentProcess.getName())) {
+                    executionOrder.add(currentProcess.getName());
+                }
+            }
+            currentTime++;
+
+        }
+    }
 
 }
+
+
+
 class PriorityNonPreemptive{
 
 }
@@ -88,5 +262,40 @@ public class Assignment{
         System.out.println("The Average of the waiting time is: " + X.AWT());
         System.out.println("The Average of the turnaround time is: " + X.ATT());
         System.out.println("The Average of the response time is: " + X.ART());
+//        processes.add(new Process("P1", 1,0,1,"Blue"));
+//        processes.add(new Process("P2", 4,1,1,"BLack"));
+//        processes.add(new Process("P3", 7,2,1,"DDDD"));
+//        processes.add(new Process("P4", 5,3,1,"Red"));
+//        SJFNonPreemptive X = new SJFNonPreemptive(processes);
+//        System.out.println("The Average of the waiting time is: " + X.AWT());
+//        System.out.println("The Average of the turnaround time is: " + X.ATT());
+//        System.out.println("The Average of the response time is: " + X.ART());
+
+
+        // TEST SJFPreemptive
+//        processes.add(new Process("P1", 6,2,1,"Blue"));
+//        processes.add(new Process("P2", 2,5,1,"BLack"));
+//        processes.add(new Process("P3", 8,1,1,"DDDD"));
+//        processes.add(new Process("P4", 3,0,1,"Red"));
+//        processes.add(new Process("P5", 4,4,1,"pink"));
+//
+//        SJFPreemptive sjfPreemptive = new SJFPreemptive(processes);
+//        sjfPreemptive.runSJFPreemptive();
+//
+//        // Output results
+//        System.out.println("\nExecution Order: ");
+//        //fre loop get the Vector and print it
+//        for (Object executionOrder : sjfPreemptive.getExecutionOrder()) {
+//            System.out.print(executionOrder + " ");
+//        }
+//
+//        System.out.println("\nProcess\tWaiting Time\tTurnaround Time");
+//        for (Process process : processes) {
+//            System.out.println(process.getName() + "\t\t"  + process.getWaiting() + "\t\t\t\t" + process.getTurnaround());
+//        }
+//
+//        System.out.println("The Average of the waiting time is: " + sjfPreemptive.AWT());
+//        System.out.println("The Average of the turnaround time is: " + sjfPreemptive.ATT());
     }
 }
+
