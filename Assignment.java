@@ -38,23 +38,26 @@ class SJFNonPreemptive {
                 if (P.ArrivalTime > CurrentTime) {break; /*Stop searching when you reach a P that hasn't arrived yet*/}
                 if (P.BurstTime < shortestJob.BurstTime) {shortestJob = P;}
             }
+            int StartPoint , EndPoint;
             // set the value of the waiting time for each process
             shortestJob.Waiting += CurrentTime - shortestJob.ArrivalTime;
             SumArrival += shortestJob.Waiting;
             // set the value of the response time for each process
             shortestJob.Response += CurrentTime - shortestJob.ArrivalTime;
             SumResponse += shortestJob.Response;
-            // Execute the shortest job
+            StartPoint = CurrentTime;
+            EndPoint = CurrentTime + shortestJob.BurstTime;
+                    // Execute the shortest job
             System.out.println("Executing process " + shortestJob.Name +
-                    " from time " + CurrentTime + " to " + (CurrentTime + shortestJob.BurstTime));
+                    " from time " + StartPoint + " to " + EndPoint);
             // Update current time and remove the executed process from the list
             CurrentTime += shortestJob.BurstTime;
             shortestJob.Turnaround = CurrentTime - shortestJob.ArrivalTime;
             SumTurnaround += shortestJob.Turnaround;
             Processes.remove(shortestJob);
-            System.out.println(shortestJob.Waiting + " " + shortestJob.Response + " " + shortestJob.Turnaround);
+            //System.out.println(shortestJob.Waiting + " " + shortestJob.Response + " " + shortestJob.Turnaround);
         }
-        System.out.println(SumArrival + " " + SumResponse + " " + SumTurnaround);
+        //System.out.println(SumArrival + " " + SumResponse + " " + SumTurnaround);
     }
     // calc the average of the turnaround time of the algorithm
     public float ATT() {
